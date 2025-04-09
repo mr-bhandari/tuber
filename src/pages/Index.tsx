@@ -118,7 +118,7 @@ const Index = () => {
           setIsReady(true);
           
           uiToast({
-            title: "Conversion Complete",
+            title: "Ready for Download",
             description: `Your ${format.toUpperCase()} file is ready for download!`,
           });
         }
