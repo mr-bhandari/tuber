@@ -1,11 +1,10 @@
-
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Download, Loader2 } from 'lucide-react';
-import { FormatType, VideoQuality, AudioQuality } from './FormatSelector';
-import { useToast } from '@/components/ui/use-toast';
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Download, Loader2 } from "lucide-react";
+import { FormatType, VideoQuality, AudioQuality } from "./FormatSelector";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ConversionProcessProps {
   isConverting: boolean;
@@ -27,11 +26,11 @@ const ConversionProcess = ({
   isReady,
 }: ConversionProcessProps) => {
   const { toast } = useToast();
-  
+
   const handleDownload = () => {
     toast({
-      title: "Download started",
-      description: `Your ${format.toUpperCase()} file is being downloaded.`,
+      title: "Download initiated",
+      description: `Your ${format.toUpperCase()} file is now downloading. Please save the file when prompted.`,
     });
     onDownload();
   };
@@ -55,19 +54,23 @@ const ConversionProcess = ({
                 </span>
                 <span className="text-sm font-medium">{displayProgress}%</span>
               </div>
-              <Progress 
-                value={displayProgress} 
+              <Progress
+                value={displayProgress}
                 className="h-3 transition-all duration-300"
               />
             </div>
             <p className="text-xs text-muted-foreground text-center">
-              Please wait while we convert your file...
+              Please wait while we prepare your file. This may take several
+              minutes for longer videos...
             </p>
           </>
         ) : (
           <>
             {isReady ? (
-              <Button onClick={handleDownload} className="w-full bg-green-600 hover:bg-green-700">
+              <Button
+                onClick={handleDownload}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
                 <Download className="mr-2 h-4 w-4" />
                 Download {format.toUpperCase()} {quality}
               </Button>
@@ -78,8 +81,8 @@ const ConversionProcess = ({
             )}
             <p className="text-xs text-center text-muted-foreground">
               {isReady
-                ? "Your file is ready for download!"
-                : "Click to start the conversion process"}
+                ? "Click to download your file. When prompted, make sure to save the file with the correct extension."
+                : "Click to start the conversion process. This may take several minutes for longer videos."}
             </p>
           </>
         )}
