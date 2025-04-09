@@ -13,7 +13,7 @@ export interface VideoData {
 // Extracts the video ID from a YouTube URL
 export const extractVideoId = async (url: string): Promise<string | null> => {
   try {
-    const response = await fetch(`http://localhost:8081/api/extract-id?url=${encodeURIComponent(url)}`);
+    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/extract-id?url=${encodeURIComponent(url)}`);
     if (!response.ok) {
       throw new Error('Failed to extract video ID');
     }
@@ -31,7 +31,7 @@ const conversionMap = new Map<string, string>();
 export const fetchVideoInfo = async (url: string): Promise<VideoData | null> => {
   try {
     // Make API call to our Java backend
-    const response = await fetch(`http://localhost:8081/api/video-info?url=${encodeURIComponent(url)}`);
+    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/video-info?url=${encodeURIComponent(url)}`);
     console.log(response);
     console.log("biiiibiii")
     if (!response.ok) {
@@ -63,7 +63,7 @@ export const startConversion = async (
   title: string
 ): Promise<boolean> => {
   try {
-    const response = await fetch('http://localhost:8081/api/convert', {
+    const response = await fetch('https://hg2rfqhj.cdpad.io/api/convert', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ export const checkConversionProgress = async (
       return 0;
     }
     
-    const response = await fetch(`http://localhost:8081/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
+    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
     
     if (!response.ok) {
       console.error("Failed to check progress");
@@ -147,7 +147,7 @@ export const getDownloadUrl = async (
       return null;
     }
     
-    const response = await fetch(`http://localhost:8081/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
+    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
     
     if (!response.ok) {
       console.error("Failed to get download URL");
@@ -170,7 +170,7 @@ export const getDownloadUrl = async (
 // Check if backend is online
 export const checkBackendStatus = async (): Promise<boolean> => {
   try {
-    const response = await fetch('http://localhost:8081/api/status');
+    const response = await fetch('https://hg2rfqhj.cdpad.io/api/status');
     return response.ok;
   } catch (error) {
     console.error("Backend status check failed:", error);
