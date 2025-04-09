@@ -157,7 +157,7 @@ export const getDownloadUrl = async (
     const data = await response.json();
     
     if (data.completed && data.downloadUrl) {
-      return `http://localhost:8081${data.downloadUrl}`;
+      return data.downloadUrl; // Direct URL for client-side download
     }
     
     return null;
