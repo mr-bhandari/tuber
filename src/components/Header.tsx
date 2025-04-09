@@ -28,7 +28,7 @@ const Header = () => {
         <div className="bg-gradient p-2 rounded-lg">
           <Download className="h-6 w-6 text-white" />
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient">
+          <h1 className="text-3xl md:text-4xl font-bold text-white bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
           YouTube Converter
         </h1>
         <div className="bg-gradient p-2 rounded-lg">
@@ -36,7 +36,7 @@ const Header = () => {
         </div>
       </div>
       <p className="text-muted-foreground mt-2 text-center max-w-md">
-        Convert YouTube links to MP3 and MP4 formats with backend processing using youtube-dl/yt-dlp
+        Convert YouTube links to MP3 and MP4 formats for direct client-side download
       </p>
       <div className="flex items-center gap-2 mt-3">
         <div className="px-2 py-1 bg-black/10 rounded text-xs">MP4: 720p, 1080p</div>
