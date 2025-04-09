@@ -13,7 +13,7 @@ export interface VideoData {
 // Extracts the video ID from a YouTube URL
 export const extractVideoId = async (url: string): Promise<string | null> => {
   try {
-    const response = await fetch(`http://localhost:8080/api/extract-id?url=${encodeURIComponent(url)}`);
+    const response = await fetch(`http://localhost:8081/api/extract-id?url=${encodeURIComponent(url)}`);
     if (!response.ok) {
       throw new Error('Failed to extract video ID');
     }
@@ -31,7 +31,7 @@ const conversionMap = new Map<string, string>();
 export const fetchVideoInfo = async (url: string): Promise<VideoData | null> => {
   try {
     // Make API call to our Java backend
-    const response = await fetch(`http://localhost:8080/api/video-info?url=${encodeURIComponent(url)}`);
+    const response = await fetch(`http://localhost:8081/api/video-info?url=${encodeURIComponent(url)}`);
     
     if (!response.ok) {
       toast('Failed to fetch video info');
@@ -62,7 +62,7 @@ export const startConversion = async (
   title: string
 ): Promise<boolean> => {
   try {
-    const response = await fetch('http://localhost:8080/api/convert', {
+    const response = await fetch('http://localhost:8081/api/convert', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export const checkConversionProgress = async (
       return 0;
     }
     
-    const response = await fetch(`http://localhost:8080/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
+    const response = await fetch(`http://localhost:8081/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
     
     if (!response.ok) {
       console.error("Failed to check progress");
@@ -146,7 +146,7 @@ export const getDownloadUrl = async (
       return null;
     }
     
-    const response = await fetch(`http://localhost:8080/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
+    const response = await fetch(`http://localhost:8081/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
     
     if (!response.ok) {
       console.error("Failed to get download URL");
@@ -156,7 +156,7 @@ export const getDownloadUrl = async (
     const data = await response.json();
     
     if (data.completed && data.downloadUrl) {
-      return `http://localhost:8080${data.downloadUrl}`;
+      return `http://localhost:8081${data.downloadUrl}`;
     }
     
     return null;
@@ -169,7 +169,7 @@ export const getDownloadUrl = async (
 // Check if backend is online
 export const checkBackendStatus = async (): Promise<boolean> => {
   try {
-    const response = await fetch('http://localhost:8080/api/status');
+    const response = await fetch('http://localhost:8081/api/status');
     return response.ok;
   } catch (error) {
     console.error("Backend status check failed:", error);
