@@ -1,4 +1,3 @@
-
 // This service connects to our Java backend
 import { toast } from "sonner";
 
@@ -13,9 +12,11 @@ export interface VideoData {
 // Extracts the video ID from a YouTube URL
 export const extractVideoId = async (url: string): Promise<string | null> => {
   try {
-    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/extract-id?url=${encodeURIComponent(url)}`);
+    const response = await fetch(
+      `https://hg2rfqhj.cdpad.io/api/extract-id?url=${encodeURIComponent(url)}`
+    );
     if (!response.ok) {
-      throw new Error('Failed to extract video ID');
+      throw new Error("Failed to extract video ID");
     }
     return await response.text();
   } catch (error) {
@@ -28,29 +29,40 @@ export const extractVideoId = async (url: string): Promise<string | null> => {
 const conversionMap = new Map<string, string>();
 
 // Function to fetch video info from backend
-export const fetchVideoInfo = async (url: string): Promise<VideoData | null> => {
+export const fetchVideoInfo = async (
+  url: string
+): Promise<VideoData | null> => {
   try {
-    // Make API call to our Java backend
-    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/video-info?url=${encodeURIComponent(url)}`);
+    // // Make API call to our Java backend
+    // const response = await fetch(`https://hg2rfqhj.cdpad.io/api/video-info?url=${encodeURIComponent(url)}`);
+    // Use an absolute URL with http://localhost:8081 for direct server access
+    const apiUrl = `https://hg2rfqhj.cdpad.io/api/video-info?url=${encodeURIComponent(
+      url
+    )}`;
+    console.log("Fetching video info from:", apiUrl);
+
+    const response = await fetch(apiUrl);
     console.log(response);
-    console.log("biiiibiii")
+    console.log("biiiibiii");
     if (!response.ok) {
-      toast('Failed to fetch video info');
+      toast("Failed to fetch video info");
       return null;
     }
-    
+
     const data = await response.json();
-    
+
     return {
       id: data.videoId,
       title: data.title,
-      thumbnail: data.thumbnailUrl || `https://i.ytimg.com/vi/${data.videoId}/maxresdefault.jpg`,
+      thumbnail:
+        data.thumbnailUrl ||
+        `https://i.ytimg.com/vi/${data.videoId}/maxresdefault.jpg`,
       duration: data.duration,
-      channel: data.channel || data.author
+      channel: data.channel || data.author,
     };
   } catch (error) {
     console.error("Failed to fetch video info:", error);
-    toast('Error fetching video info');
+    toast("Error fetching video info");
     return null;
   }
 };
@@ -63,33 +75,36 @@ export const startConversion = async (
   title: string
 ): Promise<boolean> => {
   try {
-    const response = await fetch('https://hg2rfqhj.cdpad.io/api/convert', {
-      method: 'POST',
+    const response = await fetch("https://hg2rfqhj.cdpad.io/api/convert", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         videoId,
         format,
         quality,
-        title
+        title,
       }),
     });
-    
+
     if (!response.ok) {
-      toast('Failed to start conversion');
+      toast("Failed to start conversion");
       return false;
     }
-    
+
     const conversionId = await response.text();
-    
+
     // Store the conversion ID for later use
     conversionMap.set(`${videoId}-${format}-${quality}`, conversionId);
-    
+    console.log(
+      `Starting conversion: ${videoId}-${format}-${quality} with ID: ${conversionId}`
+    );
+
     return true;
   } catch (error) {
     console.error("Error starting conversion:", error);
-    toast('Error starting conversion');
+    toast("Error starting conversion");
     return false;
   }
 };
@@ -102,20 +117,28 @@ export const checkConversionProgress = async (
 ): Promise<number> => {
   try {
     const conversionId = conversionMap.get(`${videoId}-${format}-${quality}`);
-    
+
     if (!conversionId) {
       console.error("No conversion ID found");
       return 0;
     }
-    
-    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
-    
+
+    const jobId = `${videoId}-${format}-${quality}`;
+    console.log(
+      `Checking progress for: ${jobId} with conversion ID: ${conversionId}`
+    );
+
+    const response = await fetch(
+      `https://hg2rfqhj.cdpad.io/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`
+    );
+
     if (!response.ok) {
       console.error("Failed to check progress");
       return 0;
     }
-    
+
     const data = await response.json();
+    console.log(`Progress for ${jobId}: ${data.progress}%`);
     return data.progress;
   } catch (error) {
     console.error("Error checking progress:", error);
@@ -141,25 +164,52 @@ export const getDownloadUrl = async (
 ): Promise<string | null> => {
   try {
     const conversionId = conversionMap.get(`${videoId}-${format}-${quality}`);
-    
+    const jobId = `${videoId}-${format}-${quality}`;
+
     if (!conversionId) {
-      console.error("No conversion ID found");
+      // console.error("No conversion ID found");
+      console.error("No conversion ID found for download");
       return null;
     }
-    
-    const response = await fetch(`https://hg2rfqhj.cdpad.io/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`);
-    
+    console.log(
+      `Getting download URL for: ${jobId} with conversion ID: ${conversionId}`
+    );
+
+    const response = await fetch(
+      `https://hg2rfqhj.cdpad.io/api/progress?conversionId=${conversionId}&videoId=${videoId}&format=${format}&quality=${quality}`
+    );
+
     if (!response.ok) {
       console.error("Failed to get download URL");
       return null;
     }
-    
+
     const data = await response.json();
-    
+
+    console.log(
+      `Download status for ${jobId}: completed=${
+        data.completed
+      }, hasDownloadUrl=${!!data.downloadUrl}`
+    );
+
     if (data.completed && data.downloadUrl) {
-      return data.downloadUrl; // Direct URL for client-side download
+      // return `http://localhost:8081${data.downloadUrl}`;
+      // Make sure the URL starts with http or https
+      // let url = data.downloadUrl;
+      // if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      //   url =
+      //     "https://hg2rfqhj.cdpad.io" + (url.startsWith("/") ? "" : "/") + url;
+      // }
+      // // console.log("Download URL:", url);
+      // // Add a timestamp parameter to prevent caching issues
+      // url =
+      //   url + (url.includes("?") ? "&" : "?") + "_t=" + new Date().getTime();
+
+      // console.log("Download URL:", url);
+      // return url;
+      return data.downloadUrl;
     }
-    
+
     return null;
   } catch (error) {
     console.error("Error getting download URL:", error);
@@ -170,7 +220,7 @@ export const getDownloadUrl = async (
 // Check if backend is online
 export const checkBackendStatus = async (): Promise<boolean> => {
   try {
-    const response = await fetch('https://hg2rfqhj.cdpad.io/api/status');
+    const response = await fetch("https://hg2rfqhj.cdpad.io/api/status");
     return response.ok;
   } catch (error) {
     console.error("Backend status check failed:", error);
