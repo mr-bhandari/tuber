@@ -32,7 +32,8 @@ export const fetchVideoInfo = async (url: string): Promise<VideoData | null> => 
   try {
     // Make API call to our Java backend
     const response = await fetch(`http://localhost:8081/api/video-info?url=${encodeURIComponent(url)}`);
-    
+    console.log(response);
+    console.log("biiiibiii")
     if (!response.ok) {
       toast('Failed to fetch video info');
       return null;
