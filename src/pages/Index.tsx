@@ -1,37 +1,36 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import Header from '@/components/Header';
-import URLInput from '@/components/URLInput';
-import FormatSelector, { 
-  FormatType, 
-  VideoQuality, 
-  AudioQuality 
-} from '@/components/FormatSelector';
-import VideoPreview from '@/components/VideoPreview';
-import ConversionProcess from '@/components/ConversionProcess';
-import EducationalInfo from '@/components/EducationalInfo';
+import React, { useState, useEffect, useRef } from "react";
+import Header from "@/components/Header";
+import URLInput from "@/components/URLInput";
+import FormatSelector, {
+  FormatType,
+  VideoQuality,
+  AudioQuality,
+} from "@/components/FormatSelector";
+import VideoPreview from "@/components/VideoPreview";
+import ConversionProcess from "@/components/ConversionProcess";
+import EducationalInfo from "@/components/EducationalInfo";
 import {
   fetchVideoInfo,
   startConversion,
   checkConversionProgress,
   completeConversion,
-  getDownloadUrl
-} from '@/services/youtubeService';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast';
-import { toast } from 'sonner';
+  getDownloadUrl,
+} from "@/services/youtubeService";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const Index = () => {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [videoData, setVideoData] = useState(null);
-  const [format, setFormat] = useState<FormatType>('mp3');
-  const [videoQuality, setVideoQuality] = useState<VideoQuality>('720p');
-  const [audioQuality, setAudioQuality] = useState<AudioQuality>('128kbps');
+  const [format, setFormat] = useState<FormatType>("mp3");
+  const [videoQuality, setVideoQuality] = useState<VideoQuality>("720p");
+  const [audioQuality, setAudioQuality] = useState<AudioQuality>("128kbps");
   const [isConverting, setIsConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isReady, setIsReady] = useState(false);
-  
+
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
   const { toast: uiToast } = useToast();
 
@@ -41,7 +40,7 @@ const Index = () => {
       setIsReady(false);
     }
   }, [format, videoQuality, audioQuality]);
-  
+
   // Clear interval on unmount
   useEffect(() => {
     return () => {
@@ -62,11 +61,12 @@ const Index = () => {
       const data = await fetchVideoInfo(url);
       if (data) {
         setVideoData(data);
-        toast('Video information fetched successfully!');
+        toast("Video information fetched successfully!");
       } else {
         uiToast({
           title: "Error",
-          description: "Could not fetch video information. Please check the URL.",
+          description:
+            "Could not fetch video information. Please check the URL.",
           variant: "destructive",
         });
       }
@@ -90,9 +90,14 @@ const Index = () => {
     setIsReady(false);
 
     try {
-      const quality = format === 'mp4' ? videoQuality : audioQuality;
+      const quality = format === "mp4" ? videoQuality : audioQuality;
       // Start conversion on the backend
-      const success = await startConversion(videoData.id, format, quality, videoData.title);
+      const success = await startConversion(
+        videoData.id,
+        format,
+        quality,
+        videoData.title
+      );
 
       if (!success) {
         throw new Error("Failed to start conversion");
@@ -105,7 +110,11 @@ const Index = () => {
 
       // Set up progress checker
       progressInterval.current = setInterval(async () => {
-        const currentProgress = await checkConversionProgress(videoData.id, format, quality);
+        const currentProgress = await checkConversionProgress(
+          videoData.id,
+          format,
+          quality
+        );
         setProgress(currentProgress);
 
         if (currentProgress >= 100) {
@@ -113,12 +122,12 @@ const Index = () => {
             clearInterval(progressInterval.current);
             progressInterval.current = null;
           }
-          
+
           setIsConverting(false);
           setIsReady(true);
-          
+
           uiToast({
-            title: "Ready for Download",
+            title: "Conversion Complete",
             description: `Your ${format.toUpperCase()} file is ready for download!`,
           });
         }
@@ -131,7 +140,7 @@ const Index = () => {
         variant: "destructive",
       });
       setIsConverting(false);
-      
+
       if (progressInterval.current) {
         clearInterval(progressInterval.current);
         progressInterval.current = null;
@@ -142,23 +151,32 @@ const Index = () => {
   const handleDownload = async () => {
     if (!videoData || !isReady) return;
 
-    const quality = format === 'mp4' ? videoQuality : audioQuality;
+    const quality = format === "mp4" ? videoQuality : audioQuality;
     try {
       const downloadUrl = await getDownloadUrl(videoData.id, format, quality);
-      
+
       if (!downloadUrl) {
         throw new Error("Download URL not available");
       }
-      
-      // Create an invisible anchor element to trigger the download
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = `${videoData.title.replace(/[^a-zA-Z0-9]/g, '_')}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
-      toast('Download started!');
+
+      // // Create an invisible anchor element to trigger the download
+      // const a = document.createElement('a');
+      // a.href = downloadUrl;
+      // a.download = `${videoData.title.replace(/[^a-zA-Z0-9]/g, '_')}.${format}`;
+      // document.body.appendChild(a);
+      // a.click();
+      // document.body.removeChild(a);
+      console.log("Opening download URL:", downloadUrl);
+
+      // Use a more reliable way to trigger downloads
+      const filename = `${videoData.title.replace(
+        /[^a-zA-Z0-9]/g,
+        "_"
+      )}.${format}`;
+
+      // Open URL in a new tab instead of using download attribute
+      window.open(downloadUrl, "_blank");
+      toast("Download started!");
     } catch (error) {
       console.error("Download error:", error);
       uiToast({
@@ -204,7 +222,7 @@ const Index = () => {
                     progress={progress}
                     onConvert={handleConvert}
                     format={format}
-                    quality={format === 'mp4' ? videoQuality : audioQuality}
+                    quality={format === "mp4" ? videoQuality : audioQuality}
                     onDownload={handleDownload}
                     isReady={isReady}
                   />
@@ -212,7 +230,7 @@ const Index = () => {
               </div>
 
               <Separator className="w-full max-w-2xl my-6" />
-              
+
               <EducationalInfo />
             </>
           )}
